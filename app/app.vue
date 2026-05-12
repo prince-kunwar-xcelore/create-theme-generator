@@ -175,26 +175,32 @@ function save() {
   --accent-subtle:    rgba(124, 124, 255, 0.13);
   --accent-border:    rgba(124, 124, 255, 0.3);
   --overlay:          rgba(0, 0, 0, 0.65);
+  --sidebar-bg:       #0a0a0a;
+  --shadow-card:      none;
+  --shadow-panel:     -16px 0 48px rgba(0, 0, 0, 0.5);
 }
 
 [data-theme="light"] {
-  --bg:               #f4f4f6;
+  --bg:               #ffffff;
   --surface:          #ffffff;
   --surface-raised:   #ffffff;
-  --surface-2:        #ededf0;
-  --surface-hover:    #f7f7fa;
-  --border:           #e2e2e6;
-  --border-strong:    #aaaaaa;
+  --surface-2:        #f3f4f8;
+  --surface-hover:    #f7f8fc;
+  --sidebar-bg:       #f0f1f5;
+  --border:           #e0e1e8;
+  --border-strong:    #9999aa;
   --text:             #111111;
-  --text-2:           #333333;
-  --text-muted:       #666666;
-  --text-faint:       #999999;
-  --text-placeholder: #bbbbbb;
+  --text-2:           #2a2a3a;
+  --text-muted:       #555566;
+  --text-faint:       #888899;
+  --text-placeholder: #aaaabc;
   --accent:           #5555ee;
-  --accent-text:      #4444dd;
+  --accent-text:      #4444cc;
   --accent-subtle:    rgba(85, 85, 238, 0.1);
   --accent-border:    rgba(85, 85, 238, 0.25);
-  --overlay:          rgba(0, 0, 0, 0.4);
+  --overlay:          rgba(0, 0, 0, 0.35);
+  --shadow-card:      0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.07);
+  --shadow-panel:     0 4px 24px rgba(0,0,0,0.12);
 }
 
 html, body {

@@ -152,7 +152,7 @@ function swatchCss(c: DerivedColor): string {
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-panel);
 }
 
 /* ── header ─────────────────────────────────────────────────────────────────── */

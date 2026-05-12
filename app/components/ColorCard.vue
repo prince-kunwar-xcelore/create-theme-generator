@@ -145,6 +145,7 @@ function update(key: keyof OklchColor, e: Event) {
   border: 1px solid var(--border);
   border-radius: 14px;
   overflow: hidden;
+  box-shadow: var(--shadow-card);
 }
 
 .swatch {

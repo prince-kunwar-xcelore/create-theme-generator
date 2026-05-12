@@ -129,7 +129,7 @@ function fmtDate(iso?: string) {
 .sidebar {
   width: 200px;
   min-width: 200px;
-  background: var(--bg);
+  background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
