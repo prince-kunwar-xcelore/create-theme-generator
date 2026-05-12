@@ -28,8 +28,9 @@ const { theme, init: initTheme, toggle: toggleTheme } = useTheme()
 // ── visible slice ─────────────────────────────────────────────────────────────
 const visibleColors = computed(() => customColors.value.filter(c => isVisible(c.id)))
 
-// ── panel state ───────────────────────────────────────────────────────────────
-const showPanel = ref(false)
+// ── panel / sidebar state ─────────────────────────────────────────────────────
+const showPanel   = ref(false)
+const sidebarOpen = ref(false)
 
 // ── seed default colors into a fresh theme ────────────────────────────────────
 function seedDefaults() {
@@ -74,6 +75,7 @@ function save() {
         <span class="logo">⬡</span>
         <h1>Theme Generator</h1>
         <div class="header-actions">
+          <button class="hdr-btn icon menu-btn" title="Themes" @click="sidebarOpen = true">☰</button>
           <button
             class="hdr-btn icon"
             :title="theme === 'dark' ? 'Switch to light' : 'Switch to dark'"
@@ -90,7 +92,7 @@ function save() {
     </header>
 
     <div class="workspace">
-      <ThemeSidebar @new-theme="handleNewTheme" @import="handleImport" />
+      <ThemeSidebar :open="sidebarOpen" @new-theme="handleNewTheme" @import="handleImport" @close="sidebarOpen = false" />
 
       <main class="main">
         <div class="content">
@@ -354,4 +356,12 @@ h1 {
 }
 
 .empty strong { color: var(--text-muted); }
+
+@media (min-width: 641px) {
+  .menu-btn { display: none; }
+}
+
+@media (max-width: 640px) {
+  .content { padding: 24px 16px; }
+}
 </style>

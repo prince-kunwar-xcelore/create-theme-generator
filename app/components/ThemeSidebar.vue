@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { ThemeSlide } from '~/composables/useColorStore'
 
+defineProps<{ open?: boolean }>()
+
 const emit = defineEmits<{
   'new-theme': []
   import: [slide: ThemeSlide]
+  close: []
 }>()
 
 const { themes, activeId, active, isDirty, switchTheme, removeTheme, renameTheme } = useColorStore()
@@ -67,9 +70,14 @@ function fmtDate(iso?: string) {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <Teleport to="body">
+    <div v-show="open" class="sidebar-backdrop" @click="$emit('close')" />
+  </Teleport>
+
+  <aside class="sidebar" :class="{ open }">
     <div class="sidebar-head">
       <span class="sidebar-title">Themes</span>
+      <button class="sidebar-close" @click="$emit('close')">✕</button>
     </div>
 
     <div class="theme-list">
@@ -298,5 +306,56 @@ function fmtDate(iso?: string) {
   font-size: 10px;
   color: #f87171;
   padding: 2px 2px;
+}
+
+/* ── mobile drawer ───────────────────────────────────────────────────────────── */
+
+.sidebar-close { display: none; }
+
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    border-right: 1px solid var(--border);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-faint);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+
+  .sidebar-close:hover { color: var(--text); }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: var(--overlay);
+  }
 }
 </style>
