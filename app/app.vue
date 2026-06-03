@@ -414,17 +414,16 @@ h1 {
 /* ── collapsible body ────────────────────────────────────────────────────────── */
 
 .section-body {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.25s ease;
+  overflow: hidden;
+  max-height: 4000px;
+  transition: max-height 0.35s ease-in-out;
 }
 
 .section-body.collapsed {
-  grid-template-rows: 0fr;
+  max-height: 0;
 }
 
 .section-body-inner {
-  overflow: hidden;
   padding: 12px 16px 16px;
 }
 
