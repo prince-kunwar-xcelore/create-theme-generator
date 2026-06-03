@@ -55,6 +55,11 @@ function seedSecondaryDefaults() {
   for (const c of DEFAULT_SECONDARY_COLORS) addSecondaryColor(c.name, c.delta)
 }
 
+// ── unsaved-changes guard ─────────────────────────────────────────────────────
+function beforeUnload(e: BeforeUnloadEvent) {
+  if (themes.value.some(t => isDirty(t.id))) e.preventDefault()
+}
+
 // ── bootstrap ─────────────────────────────────────────────────────────────────
 onMounted(() => {
   initTheme()
@@ -66,6 +71,11 @@ onMounted(() => {
     seedDefaults()
     seedSecondaryDefaults()
   }
+  window.addEventListener('beforeunload', beforeUnload)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnload)
 })
 
 // ── sidebar events ────────────────────────────────────────────────────────────
