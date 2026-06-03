@@ -416,7 +416,6 @@ h1 {
 .section-body {
   display: grid;
   grid-template-rows: 1fr;
-  overflow: hidden;
   transition: grid-template-rows 0.25s ease;
 }
 
@@ -425,7 +424,7 @@ h1 {
 }
 
 .section-body-inner {
-  min-height: 0;
+  overflow: hidden;
   padding: 12px 16px 16px;
 }
 
