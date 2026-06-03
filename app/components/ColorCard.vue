@@ -1,6 +1,21 @@
 <script setup lang="ts">
+import { parse, oklch as toOklchColor, formatHex } from 'culori'
 import { resolveColor } from '~/composables/useColorStore'
 import type { OklchColor } from '~/composables/useColorStore'
+
+// ── color conversion ──────────────────────────────────────────────────────────
+
+function hexToOklch(hex: string): OklchColor | null {
+  const parsed = parse(hex.startsWith('#') ? hex : `#${hex}`)
+  if (!parsed) return null
+  const ok = toOklchColor(parsed)
+  if (!ok) return null
+  return { l: +(ok.l ?? 0).toFixed(4), c: +(ok.c ?? 0).toFixed(4), h: +((ok.h ?? 0)).toFixed(1) }
+}
+
+function oklchToHex(ok: OklchColor): string {
+  return formatHex({ mode: 'oklch', l: ok.l, c: ok.c, h: ok.h }) ?? '#000000'
+}
 
 const props = defineProps<{
   name: string
@@ -65,6 +80,29 @@ function fmtDiff(val: number, decimals: number, unit = '') {
   return (val > 0 ? '+' : '') + val.toFixed(decimals) + unit
 }
 
+// ── hex input (absolute / non-delta cards only) ───────────────────────────────
+
+const hexDraft   = ref('')
+const hexFocused = ref(false)
+
+watch(resolved, (c) => {
+  if (!hexFocused.value) hexDraft.value = oklchToHex(c)
+}, { immediate: true })
+
+function onHexInput(e: Event) {
+  const val = (e.target as HTMLInputElement).value
+  hexDraft.value = val
+  const ok = hexToOklch(val)
+  if (ok) emit('update:color', ok)
+}
+
+function onHexBlur() {
+  hexFocused.value = false
+  hexDraft.value = oklchToHex(resolved.value)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function update(key: keyof OklchColor, e: Event) {
   const v = parseFloat((e.target as HTMLInputElement).value)
 
@@ -99,6 +137,19 @@ function update(key: keyof OklchColor, e: Event) {
         placeholder="Color name"
         @input="$emit('update:name', ($event.target as HTMLInputElement).value)"
       />
+
+      <div v-if="!isDelta" class="hex-row">
+        <span class="lbl">#</span>
+        <input
+          class="hex-input"
+          :value="hexDraft"
+          placeholder="e.g. 3b82f6"
+          spellcheck="false"
+          @focus="hexFocused = true"
+          @input="onHexInput"
+          @blur="onHexBlur"
+        />
+      </div>
 
       <div class="slider-row">
         <span class="lbl">L</span>
@@ -304,4 +355,27 @@ function update(key: keyof OklchColor, e: Event) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.hex-row {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+
+.hex-input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 5px 10px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: monospace;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.1s;
+}
+
+.hex-input:focus { border-color: var(--accent); }
 </style>
