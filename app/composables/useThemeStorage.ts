@@ -52,6 +52,15 @@ export const useThemeStorage = () => {
       }
     }
 
+    if (theme.secondaryColors?.length) {
+      lines.push(``)
+      for (const c of theme.secondaryColors) {
+        const r = resolveColor(c.delta, s)
+        const varName = '--' + c.name.toLowerCase().replace(/\s+/g, '-')
+        lines.push(`  ${varName.padEnd(20)} ${css(r)};`)
+      }
+    }
+
     lines.push(`}`)
     triggerDownload(lines.join('\n'), `${slug(theme.name)}.css`, 'text/css')
   }
@@ -67,11 +76,13 @@ export const useThemeStorage = () => {
 
           resolve({
             id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-            name:          raw.name        ?? 'Imported',
-            primary:       raw.primary,
-            secondary:     raw.secondary,
-            customColors:  raw.customColors  ?? [],
-            hiddenColorIds: raw.hiddenColorIds ?? [],
+            name:               raw.name              ?? 'Imported',
+            primary:            raw.primary,
+            secondary:          raw.secondary,
+            customColors:       raw.customColors       ?? [],
+            hiddenColorIds:     raw.hiddenColorIds     ?? [],
+            secondaryColors:    raw.secondaryColors    ?? [],
+            secondaryHiddenIds: raw.secondaryHiddenIds ?? [],
           })
         } catch (err: any) {
           reject(new Error(err.message ?? 'Failed to parse file'))

@@ -24,6 +24,8 @@ export interface ThemeSlide {
   secondary: BaseColor;
   customColors: DerivedColor[];
   hiddenColorIds: string[];
+  secondaryColors: DerivedColor[];
+  secondaryHiddenIds: string[];
 }
 
 export function resolveColor(delta: OklchColor, base: OklchColor): OklchColor {
@@ -54,6 +56,8 @@ export function createDefaultSlide(name = "Theme 1"): ThemeSlide {
     },
     customColors: [],
     hiddenColorIds: [],
+    secondaryColors: [],
+    secondaryHiddenIds: [],
   };
 }
 
@@ -71,6 +75,8 @@ export const useColorStore = () => {
   const secondary = computed(() => active.value.secondary);
   const customColors = computed(() => active.value.customColors);
   const hiddenIds = computed(() => active.value.hiddenColorIds);
+  const secondaryColors = computed(() => active.value.secondaryColors);
+  const secondaryHiddenIds = computed(() => active.value.secondaryHiddenIds);
 
   // ── dirty tracking ────────────────────────────────────────────────────────────
   function markDirty(id = activeId.value) {
@@ -155,6 +161,41 @@ export const useColorStore = () => {
     markDirty();
   }
 
+  // ── secondary color operations ────────────────────────────────────────────────
+  function addSecondaryColor(name: string, delta: OklchColor = { l: 0, c: 0, h: 0 }) {
+    active.value.secondaryColors.push({ id: genId(), name, delta });
+    markDirty();
+  }
+
+  function removeSecondaryColor(id: string) {
+    const a = active.value;
+    a.secondaryColors = a.secondaryColors.filter((c) => c.id !== id);
+    a.secondaryHiddenIds = a.secondaryHiddenIds.filter((x) => x !== id);
+    markDirty();
+  }
+
+  function isSecondaryVisible(id: string) {
+    return !active.value.secondaryHiddenIds.includes(id);
+  }
+
+  function toggleSecondaryVisibility(id: string) {
+    const a = active.value;
+    a.secondaryHiddenIds = a.secondaryHiddenIds.includes(id)
+      ? a.secondaryHiddenIds.filter((x) => x !== id)
+      : [...a.secondaryHiddenIds, id];
+    markDirty();
+  }
+
+  function setAllSecondaryVisible() {
+    active.value.secondaryHiddenIds = [];
+    markDirty();
+  }
+
+  function hideAllSecondary() {
+    active.value.secondaryHiddenIds = active.value.secondaryColors.map((c) => c.id);
+    markDirty();
+  }
+
   return {
     themes,
     activeId,
@@ -164,6 +205,8 @@ export const useColorStore = () => {
     secondary,
     customColors,
     hiddenIds,
+    secondaryColors,
+    secondaryHiddenIds,
     markDirty,
     markClean,
     isDirty,
@@ -178,5 +221,11 @@ export const useColorStore = () => {
     toggleVisibility,
     setAllVisible,
     hideAll,
+    addSecondaryColor,
+    removeSecondaryColor,
+    isSecondaryVisible,
+    toggleSecondaryVisibility,
+    setAllSecondaryVisible,
+    hideAllSecondary,
   };
 };
