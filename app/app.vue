@@ -404,18 +404,19 @@ h1 {
   font-size: 16px;
   color: var(--text-faint);
   line-height: 1;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
   display: inline-block;
-  transform: rotate(90deg);
+  transform: rotate(0deg);
 }
 
-.chevron.open { transform: rotate(-90deg); }
+.chevron.open { transform: rotate(90deg); }
 
 /* ── collapsible body ────────────────────────────────────────────────────────── */
 
 .section-body {
   display: grid;
   grid-template-rows: 1fr;
+  overflow: hidden;
   transition: grid-template-rows 0.25s ease;
 }
 
@@ -425,8 +426,7 @@ h1 {
 
 .section-body-inner {
   min-height: 0;
-  overflow: hidden;
-  padding: 0 16px 16px;
+  padding: 12px 16px 16px;
 }
 
 /* ── badges + manage button ──────────────────────────────────────────────────── */
