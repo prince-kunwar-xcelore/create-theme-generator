@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { OklchColor, ThemeSlide } from '~/composables/useColorStore'
 
-// ── default role colors (stays in app, not in store) ─────────────────────────
 const DEFAULT_COLORS: { name: string; delta: OklchColor }[] = [
   { name: 'Accent',     delta: { l:  0.05, c:  0.08, h:  25 } },
   { name: 'Background', delta: { l: -0.45, c: -0.20, h:   0 } },
@@ -12,29 +11,48 @@ const DEFAULT_COLORS: { name: string; delta: OklchColor }[] = [
   { name: 'Border',     delta: { l: -0.20, c: -0.16, h:   0 } },
 ]
 
+const DEFAULT_SECONDARY_COLORS: { name: string; delta: OklchColor }[] = [
+  { name: 'Info',        delta: { l:  0.05, c:  0.06, h: -20 } },
+  { name: 'Warning',     delta: { l:  0.10, c:  0.10, h:  40 } },
+  { name: 'Success',     delta: { l:  0.05, c:  0.08, h:  80 } },
+  { name: 'Destructive', delta: { l:  0.00, c:  0.12, h: 100 } },
+  { name: 'Ring',        delta: { l: -0.10, c:  0.04, h:   0 } },
+]
+
 // ── store ─────────────────────────────────────────────────────────────────────
 const {
   themes, activeId, active, isDirty,
   primary, secondary, customColors, hiddenIds,
+  secondaryColors, secondaryHiddenIds,
   markDirty, markClean,
   addTheme, importTheme,
   addColor, removeColor,
-  isVisible, toggleVisibility, setAllVisible, hideAll,
+  isVisible,
+  addSecondaryColor, removeSecondaryColor,
+  isSecondaryVisible,
 } = useColorStore()
 
 const { loadData, saveData, downloadJSON, downloadCSS } = useThemeStorage()
 const { theme, init: initTheme, toggle: toggleTheme } = useTheme()
 
-// ── visible slice ─────────────────────────────────────────────────────────────
-const visibleColors = computed(() => customColors.value.filter(c => isVisible(c.id)))
+// ── visible slices ────────────────────────────────────────────────────────────
+const visibleColors          = computed(() => customColors.value.filter(c => isVisible(c.id)))
+const visibleSecondaryColors = computed(() => secondaryColors.value.filter(c => isSecondaryVisible(c.id)))
 
-// ── panel / sidebar state ─────────────────────────────────────────────────────
-const showPanel   = ref(false)
-const sidebarOpen = ref(false)
+// ── panel / sidebar / collapse state ─────────────────────────────────────────
+const showPanel          = ref(false)
+const showSecondaryPanel = ref(false)
+const sidebarOpen        = ref(false)
 
-// ── seed default colors into a fresh theme ────────────────────────────────────
+const collapsed = reactive({ base: false, primary: false, secondary: false })
+
+// ── seed default colors ───────────────────────────────────────────────────────
 function seedDefaults() {
   for (const c of DEFAULT_COLORS) addColor(c.name, c.delta)
+}
+
+function seedSecondaryDefaults() {
+  for (const c of DEFAULT_SECONDARY_COLORS) addSecondaryColor(c.name, c.delta)
 }
 
 // ── bootstrap ─────────────────────────────────────────────────────────────────
@@ -42,11 +60,11 @@ onMounted(() => {
   initTheme()
   const saved = loadData()
   if (saved) {
-    themes.value  = saved.themes
+    themes.value   = saved.themes
     activeId.value = saved.activeId ?? saved.themes[0]?.id
   } else {
-    // First visit — seed defaults into the initial theme
     seedDefaults()
+    seedSecondaryDefaults()
   }
 })
 
@@ -54,6 +72,7 @@ onMounted(() => {
 function handleNewTheme() {
   addTheme()
   seedDefaults()
+  seedSecondaryDefaults()
 }
 
 function handleImport(slide: ThemeSlide) {
@@ -97,54 +116,103 @@ function save() {
       <main class="main">
         <div class="content">
 
+          <!-- ── Base Colors ───────────────────────────────────────────────── -->
           <section class="section">
-            <h2 class="section-label">Base Colors</h2>
-            <div class="grid">
-              <ColorCard
-                :name="primary.name"
-                :color="primary.color"
-                @update:name="primary.name = $event; markDirty()"
-                @update:color="primary.color = $event; markDirty()"
-              />
-              <ColorCard
-                :name="secondary.name"
-                :color="secondary.color"
-                @update:name="secondary.name = $event; markDirty()"
-                @update:color="secondary.color = $event; markDirty()"
-              />
+            <button class="section-toggle" @click="collapsed.base = !collapsed.base">
+              <span class="section-label">Base Colors</span>
+              <span class="chevron" :class="{ open: !collapsed.base }">›</span>
+            </button>
+            <div class="section-body" :class="{ collapsed: collapsed.base }">
+              <div class="section-body-inner">
+                <div class="grid">
+                  <ColorCard
+                    :name="primary.name"
+                    :color="primary.color"
+                    @update:name="primary.name = $event; markDirty()"
+                    @update:color="primary.color = $event; markDirty()"
+                  />
+                  <ColorCard
+                    :name="secondary.name"
+                    :color="secondary.color"
+                    @update:name="secondary.name = $event; markDirty()"
+                    @update:color="secondary.color = $event; markDirty()"
+                  />
+                </div>
+              </div>
             </div>
           </section>
 
+          <!-- ── Primary Role Colors ──────────────────────────────────────── -->
           <section class="section">
-            <div class="section-head">
-              <h2 class="section-label">Custom Colors</h2>
-              <div class="section-actions">
+            <button class="section-toggle" @click="collapsed.primary = !collapsed.primary">
+              <span class="section-label">Primary Role Colors</span>
+              <div class="section-toggle-right">
                 <span v-if="hiddenIds.length" class="hidden-badge">{{ hiddenIds.length }} hidden</span>
-                <button class="manage-btn" @click="showPanel = true">
+                <button class="manage-btn" @click.stop="showPanel = true">
                   Colors <span class="manage-count">{{ customColors.length }}</span>
                 </button>
+                <span class="chevron" :class="{ open: !collapsed.primary }">›</span>
+              </div>
+            </button>
+            <div class="section-body" :class="{ collapsed: collapsed.primary }">
+              <div class="section-body-inner">
+                <div v-if="visibleColors.length" class="grid">
+                  <ColorCard
+                    v-for="c in visibleColors"
+                    :key="c.id"
+                    :name="c.name"
+                    :delta="c.delta"
+                    :base="primary.color"
+                    :removable="true"
+                    @update:name="c.name = $event; markDirty()"
+                    @update:delta="c.delta = $event; markDirty()"
+                    @remove="removeColor(c.id)"
+                  />
+                </div>
+                <div v-else-if="customColors.length" class="empty">
+                  All colors are hidden — open <strong>Colors</strong> to show some.
+                </div>
+                <div v-else class="empty">
+                  No colors yet — click <strong>Colors</strong> to add some.
+                </div>
               </div>
             </div>
+          </section>
 
-            <div v-if="visibleColors.length" class="grid">
-              <ColorCard
-                v-for="c in visibleColors"
-                :key="c.id"
-                :name="c.name"
-                :delta="c.delta"
-                :base="primary.color"
-                :removable="true"
-                @update:name="c.name = $event; markDirty()"
-                @update:delta="c.delta = $event; markDirty()"
-                @remove="removeColor(c.id)"
-              />
-            </div>
-
-            <div v-else-if="customColors.length" class="empty">
-              All colors are hidden — open <strong>Colors</strong> to show some.
-            </div>
-            <div v-else class="empty">
-              No colors yet — click <strong>Colors</strong> to add some.
+          <!-- ── Secondary Role Colors ─────────────────────────────────────── -->
+          <section class="section">
+            <button class="section-toggle" @click="collapsed.secondary = !collapsed.secondary">
+              <span class="section-label">Secondary Role Colors</span>
+              <div class="section-toggle-right">
+                <span v-if="secondaryHiddenIds.length" class="hidden-badge">{{ secondaryHiddenIds.length }} hidden</span>
+                <button class="manage-btn" @click.stop="showSecondaryPanel = true">
+                  Colors <span class="manage-count">{{ secondaryColors.length }}</span>
+                </button>
+                <span class="chevron" :class="{ open: !collapsed.secondary }">›</span>
+              </div>
+            </button>
+            <div class="section-body" :class="{ collapsed: collapsed.secondary }">
+              <div class="section-body-inner">
+                <div v-if="visibleSecondaryColors.length" class="grid">
+                  <ColorCard
+                    v-for="c in visibleSecondaryColors"
+                    :key="c.id"
+                    :name="c.name"
+                    :delta="c.delta"
+                    :base="secondary.color"
+                    :removable="true"
+                    @update:name="c.name = $event; markDirty()"
+                    @update:delta="c.delta = $event; markDirty()"
+                    @remove="removeSecondaryColor(c.id)"
+                  />
+                </div>
+                <div v-else-if="secondaryColors.length" class="empty">
+                  All colors are hidden — open <strong>Colors</strong> to show some.
+                </div>
+                <div v-else class="empty">
+                  No colors yet — click <strong>Colors</strong> to add some.
+                </div>
+              </div>
             </div>
           </section>
 
@@ -153,6 +221,7 @@ function save() {
     </div>
 
     <ColorManagerPanel :open="showPanel" @close="showPanel = false" />
+    <SecondaryColorManagerPanel :open="showSecondaryPanel" @close="showSecondaryPanel = false" />
   </div>
 </template>
 
@@ -283,18 +352,38 @@ h1 {
   overflow-y: auto;
 }
 
-/* ── content centering ───────────────────────────────────────────────────────── */
+/* ── content ─────────────────────────────────────────────────────────────────── */
 
 .content {
-  padding: 44px 32px;
+  padding: 32px 32px;
   display: flex;
   flex-direction: column;
-  gap: 52px;
+  gap: 4px;
 }
 
 /* ── sections ────────────────────────────────────────────────────────────────── */
 
-.section { display: flex; flex-direction: column; gap: 18px; }
+.section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.section-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  gap: 10px;
+  text-align: left;
+}
+
+.section-toggle:hover { background: var(--surface-hover); }
 
 .section-label {
   font-size: 10px;
@@ -302,15 +391,50 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
-.section-head  { display: flex; align-items: center; justify-content: space-between; }
-.section-actions { display: flex; align-items: center; gap: 10px; }
+.section-toggle-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevron {
+  font-size: 16px;
+  color: var(--text-faint);
+  line-height: 1;
+  transition: transform 0.2s ease;
+  display: inline-block;
+  transform: rotate(90deg);
+}
+
+.chevron.open { transform: rotate(-90deg); }
+
+/* ── collapsible body ────────────────────────────────────────────────────────── */
+
+.section-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.section-body.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.section-body-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 16px 16px;
+}
+
+/* ── badges + manage button ──────────────────────────────────────────────────── */
 
 .hidden-badge {
   font-size: 11px;
   color: var(--text-faint);
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 2px 8px;
@@ -320,7 +444,7 @@ h1 {
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  padding: 5px 11px;
+  padding: 4px 10px;
   border-radius: 7px;
   font-size: 11px;
   cursor: pointer;
@@ -339,6 +463,8 @@ h1 {
   padding: 1px 5px;
   border-radius: 7px;
 }
+
+/* ── grid + empty ────────────────────────────────────────────────────────────── */
 
 .grid {
   display: grid;
@@ -362,6 +488,6 @@ h1 {
 }
 
 @media (max-width: 640px) {
-  .content { padding: 24px 16px; }
+  .content { padding: 16px 12px; }
 }
 </style>
