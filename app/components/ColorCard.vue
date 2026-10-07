@@ -611,19 +611,19 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKey))
 .modal-panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 24px;
   width: 100%;
-  max-width: 500px;
+  max-width: 680px;
   overflow: hidden;
   box-shadow: 0 32px 96px rgba(0, 0, 0, 0.5);
 }
 
 .modal-swatch {
-  height: 200px;
+  height: 260px;
   position: relative;
   display: flex;
   align-items: flex-end;
-  padding: 16px;
+  padding: 20px;
   transition: background 0.1s;
 }
 
@@ -636,7 +636,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKey))
 }
 
 .modal-color-name {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.92);
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
@@ -668,26 +668,26 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKey))
 }
 
 .modal-body {
-  padding: 20px 22px 24px;
+  padding: 26px 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
 }
 
 /* ── modal slider rows ─────────────────────────────────────────────────────── */
 .modal-row {
   display: grid;
-  grid-template-columns: 18px 1fr 64px;
+  grid-template-columns: 24px 1fr 80px;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .modal-row.is-delta {
-  grid-template-columns: 18px 1fr 64px 52px;
+  grid-template-columns: 24px 1fr 80px 60px;
 }
 
 .modal-lbl {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   font-family: monospace;
   color: var(--text-muted);
@@ -699,10 +699,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKey))
 
 .modal-track-wrap input[type='range'] {
   width: 100%;
-  height: 10px;
+  height: 14px;
   appearance: none;
   -webkit-appearance: none;
-  border-radius: 5px;
+  border-radius: 7px;
   background: var(--track);
   cursor: pointer;
   outline: none;
@@ -711,33 +711,33 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKey))
 
 .modal-track-wrap input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #fff;
   border: 2px solid rgba(0, 0, 0, 0.18);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
   cursor: pointer;
 }
 
 .modal-track-wrap input[type='range']::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #fff;
   border: 2px solid rgba(0, 0, 0, 0.18);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
   cursor: pointer;
 }
 
 .modal-num {
-  font-size: 12px;
+  font-size: 14px;
   font-family: monospace;
   color: var(--text);
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 5px 8px;
+  border-radius: 8px;
+  padding: 7px 10px;
   text-align: right;
   width: 100%;
   box-sizing: border-box;
