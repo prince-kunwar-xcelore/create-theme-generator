@@ -12,29 +12,46 @@ const DEFAULT_COLORS: { name: string; delta: OklchColor }[] = [
   { name: 'Border',     delta: { l: -0.20, c: -0.16, h:   0 } },
 ]
 
+const DEFAULT_SECONDARY_COLORS: { name: string; delta: OklchColor }[] = [
+  { name: 'Info',        delta: { l:  0.05, c:  0.06, h: -20 } },
+  { name: 'Warning',     delta: { l:  0.10, c:  0.10, h:  40 } },
+  { name: 'Success',     delta: { l:  0.05, c:  0.08, h:  80 } },
+  { name: 'Destructive', delta: { l:  0.00, c:  0.12, h: 100 } },
+  { name: 'Ring',        delta: { l: -0.10, c:  0.04, h:   0 } },
+]
+
 // ── store ─────────────────────────────────────────────────────────────────────
 const {
   themes, activeId, active, isDirty,
   primary, secondary, customColors, hiddenIds,
+  secondaryColors, secondaryHiddenIds,
   markDirty, markClean,
   addTheme, importTheme,
   addColor, removeColor,
   isVisible, toggleVisibility, setAllVisible, hideAll,
+  addSecondaryColor, removeSecondaryColor,
+  isSecondaryVisible, toggleSecondaryVisibility,
 } = useColorStore()
 
 const { loadData, saveData, downloadJSON, downloadCSS } = useThemeStorage()
 const { theme, init: initTheme, toggle: toggleTheme } = useTheme()
 
-// ── visible slice ─────────────────────────────────────────────────────────────
+// ── visible slices ────────────────────────────────────────────────────────────
 const visibleColors = computed(() => customColors.value.filter(c => isVisible(c.id)))
+const visibleSecondaryColors = computed(() => secondaryColors.value.filter(c => isSecondaryVisible(c.id)))
 
 // ── panel / sidebar state ─────────────────────────────────────────────────────
-const showPanel   = ref(false)
-const sidebarOpen = ref(false)
+const showPanel          = ref(false)
+const showSecondaryPanel = ref(false)
+const sidebarOpen        = ref(false)
 
 // ── seed default colors into a fresh theme ────────────────────────────────────
 function seedDefaults() {
   for (const c of DEFAULT_COLORS) addColor(c.name, c.delta)
+}
+
+function seedSecondaryDefaults() {
+  for (const c of DEFAULT_SECONDARY_COLORS) addSecondaryColor(c.name, c.delta)
 }
 
 // ── bootstrap ─────────────────────────────────────────────────────────────────
@@ -42,11 +59,11 @@ onMounted(() => {
   initTheme()
   const saved = loadData()
   if (saved) {
-    themes.value  = saved.themes
+    themes.value   = saved.themes
     activeId.value = saved.activeId ?? saved.themes[0]?.id
   } else {
-    // First visit — seed defaults into the initial theme
     seedDefaults()
+    seedSecondaryDefaults()
   }
 })
 
@@ -54,6 +71,7 @@ onMounted(() => {
 function handleNewTheme() {
   addTheme()
   seedDefaults()
+  seedSecondaryDefaults()
 }
 
 function handleImport(slide: ThemeSlide) {
@@ -117,6 +135,39 @@ function save() {
 
           <section class="section">
             <div class="section-head">
+              <h2 class="section-label">Secondary Role Colors</h2>
+              <div class="section-actions">
+                <span v-if="secondaryHiddenIds.length" class="hidden-badge">{{ secondaryHiddenIds.length }} hidden</span>
+                <button class="manage-btn" @click="showSecondaryPanel = true">
+                  Colors <span class="manage-count">{{ secondaryColors.length }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="visibleSecondaryColors.length" class="grid">
+              <ColorCard
+                v-for="c in visibleSecondaryColors"
+                :key="c.id"
+                :name="c.name"
+                :delta="c.delta"
+                :base="secondary.color"
+                :removable="true"
+                @update:name="c.name = $event; markDirty()"
+                @update:delta="c.delta = $event; markDirty()"
+                @remove="removeSecondaryColor(c.id)"
+              />
+            </div>
+
+            <div v-else-if="secondaryColors.length" class="empty">
+              All colors are hidden — open <strong>Colors</strong> to show some.
+            </div>
+            <div v-else class="empty">
+              No colors yet — click <strong>Colors</strong> to add some.
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
               <h2 class="section-label">Custom Colors</h2>
               <div class="section-actions">
                 <span v-if="hiddenIds.length" class="hidden-badge">{{ hiddenIds.length }} hidden</span>
@@ -153,6 +204,7 @@ function save() {
     </div>
 
     <ColorManagerPanel :open="showPanel" @close="showPanel = false" />
+    <SecondaryColorManagerPanel :open="showSecondaryPanel" @close="showSecondaryPanel = false" />
   </div>
 </template>
 
